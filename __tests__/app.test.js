@@ -2,21 +2,20 @@ const { describe, test, expect } = require("@jest/globals")
 const request = require("supertest")
 const app = require("../src/app")
 
-describe("test our endpoints", () => {
+describe("CRUD tests for User", () => {
 
-    test("our static server", async () => {
-        // 1. send a request to the static server
-        const response = await request(app).get("/static/")
-
-        // 2. make sure the request succeeds
-        expect(response.statusCode).toEqual(200);
+    test("post a new user", async () => {
+        const newUser = {
+            username: "maggie",
+            email: "maggie@myhouse.com",
+            password: "dog123"
+        }
+        const response = await request(app)
+            .post("/users")
+            .send(newUser);
+        expect(response.statusCode).toEqual(201)
+        expect(response.body.username).toEqual("maggie");
+        expect(response.body).toEqual(expect.objectContaining(newUser));
     })
-
-    test("our dynamic method message", async () => {
-        const response = await request(app).get("/");
-        expect(response.statusCode).toEqual(200);
-        expect(response.text).toEqual("this was a GET request")
-    })
-
 
 })
