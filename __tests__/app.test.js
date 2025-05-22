@@ -8,11 +8,13 @@ jest.mock("../src/models/User.js", () => ({
     findOne: jest.fn(), // mock findOne for delete endpoint
 }))
 
-describe("CRUD tests for User", () => {
 
-    beforeAll( () => {
-        jest.clearAllMocks();
-    })
+beforeEach( () => {
+    jest.clearAllMocks();
+})
+
+describe("create a user", () => {
+
 
     test("post a new user", async () => {
         // prepare the data
@@ -47,6 +49,10 @@ describe("CRUD tests for User", () => {
         expect(response.statusCode).toEqual(500);
     })
 
+
+})
+
+describe("delete a user", () => {
     test("delete a user", async () => {
         // here we are expecting the endpoint to:
         // 1) find the user, given the username, using User.findOne
@@ -84,6 +90,28 @@ describe("CRUD tests for User", () => {
         // check the calls to user.destroy
         expect(newUser.destroy).toHaveBeenCalledTimes(1);
         expect(newUser.destroy).toHaveBeenCalledWith();
+    })
+
+    test("error trying to delete nonexistent user", async () => {
+        User.findOne.mockRejectedValue(null);
+
+        const response = await request(app)
+            .delete("/users/nonexistent-user");
+
+        expect(response.statusCode).toBe(404);
+    })
+
+    test("database error trying to destroy", async () => {
+        const user = {
+            destroy: jest.fn()
+        }
+        User.findOne.mockResolvedValue(user);
+        user.destroy.mockRejectedValue(new Error());
+
+        const response = await request(app)
+            .delete("/users/some-user");
+
+        expect(response.statusCode).toEqual(500);
     })
 
 })
